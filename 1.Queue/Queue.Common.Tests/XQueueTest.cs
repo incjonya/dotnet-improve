@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Common;
 using Xunit;
 
@@ -58,6 +59,48 @@ namespace Queue.Common.Tests
         public void TestNoElements()
         {
             Assert.Throws<ArgumentException>(() => (new XQueue<Object>()).Dequeue());
+        }
+
+        [Fact]
+        public async void TestHighLoad()
+        {
+            var q = new XQueue<int>();
+
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            var tEnq = Task.Run(() =>
+            {
+                for (int i = 0; i < 1_000_000; i++)
+                    q.Enqueue(i);
+            });
+
+            var tEnq2 = Task.Run(() =>
+            {
+                for (int i = 0; i < 1_000_000; i++)
+                    q.Enqueue(i);
+            });
+
+
+            //await Task.Delay(30);
+
+            //var tDeq = Task.Run(() =>
+            //{
+            //    for (int i = 0; i < 1_000_000; i++)
+            //        q.Dequeue();
+            //});
+
+            //var tDeq2 = Task.Run(() =>
+            //{
+            //    for (int i = 0; i < 1_000_000; i++)
+            //        q.Dequeue();
+            //});
+
+            Task.WaitAll(tEnq, tEnq2);
+
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Assert.Equal(2_000_000, q.Count);
+            Assert.True(elapsedMs <= 500);
         }
     }
 }
