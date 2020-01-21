@@ -1,5 +1,31 @@
-# dotnet-improve
-.NET Knowledge Improvements
+# .NET Knowledge Improvements
+
+## Книги
+
+
+1. https://yadi.sk/i/lLKAsJpvTQ2x_A
+Рихтер
+Не рекомендовал бы использовать его неоспоримую истину - у него есть неточности про GC и про параллелизм я отдельно буду уделять этому внимание когда будем глубоко обсуждать эти темы, но основы у него изложены хорошо
+
+2. https://docs.microsoft.com/ru-ru/dotnet/standard/
+Официальная документация MS
+
+3. https://yadi.sk/i/Hp6BumIE3Vge3f
+С# 7 in a nutshell. Хорошая книга по основным темам, но некоторые моменты все равно рассказаны поверхностно
+
+4. https://yadi.sk/i/iR9hfATmTJQByw
+Джон Скит. Хорошая книга по основным темам, с достаточно глубокими деталями
+
+5. https://yadi.sk/i/iR9hfATmTJQByw
+Книга по работе GC
+
+6. https://yadi.sk/i/s7p_gUpQeZ5Hbg
+Книга Стефана Клери про параллелизм. Рекомендуется читать как дополнение к тому что написано про эту тему в других книгах
+
+7. https://github.com/dotnet
+https://github.com/microsoft/referencesource
+Сурсы от MS
+
 
 ## 1. Очередь
 ДЗ написать собственную реализацию потокобезопасной очереди для типа Object не используя готовые коллекции из BCL

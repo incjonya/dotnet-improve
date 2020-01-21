@@ -95,7 +95,7 @@ namespace Queue.Common.Tests
             //        q.Dequeue();
             //});
 
-            Task.WaitAll(tEnq, tEnq2);
+            await Task.WhenAll(tEnq, tEnq2);
 
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
