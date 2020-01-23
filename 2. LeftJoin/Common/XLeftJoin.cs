@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,18 +45,19 @@ namespace Common
     public class XEnumerator : IEnumerator<Item1>
     {
         private IEnumerable<Item2> _join;
+        private IEnumerable<Item1> _source;
         private IEnumerator<Item1> _sourceEnumerator;
         private Item1 _current;
 
         public XEnumerator(IEnumerable<Item1> source, IEnumerable<Item2> join)
         {
             _join = join;
-            _sourceEnumerator = source.GetEnumerator();
+            _source = source;
         }
 
         private Item1 GetCurrent()
         {
-            if (_current == null)
+            if (_current == null && _sourceEnumerator  != null && _sourceEnumerator.Current != null)
             {
                 _current = new Item1 { ID = _sourceEnumerator.Current.ID, Value = _sourceEnumerator.Current.Value };
                 _current.Details = _join.FirstOrDefault(x => x.ID == _current.ID)?.Details;
@@ -69,12 +71,29 @@ namespace Common
 
         public void Dispose()
         {
-            _sourceEnumerator.Dispose();
+            // Dispose of unmanaged resources.
+            Dispose(true);
+            // Suppress finalization.
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _sourceEnumerator.Dispose();
+                _sourceEnumerator = null;
+            }
         }
 
         public bool MoveNext()
         {
             _current = null;
+            if (_sourceEnumerator == null)
+            {
+                _sourceEnumerator = _source.GetEnumerator();
+            }
+
             return _sourceEnumerator.MoveNext();
         }
 

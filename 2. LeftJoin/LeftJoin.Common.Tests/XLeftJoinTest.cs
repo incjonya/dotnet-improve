@@ -23,6 +23,36 @@ namespace Queue.Common.Tests
         }
 
         [Fact]
+        public void TestJoinMultiple()
+        {
+            var (source, join) = Prepare();
+
+            var actual = XLeftJoin.Get(source, join);
+
+            var first = actual.ToList();
+            Assert.Equal(3, first.Count);
+
+            var second = actual.ToList();
+            Assert.Equal(3, second.Count);           
+        }
+
+        [Fact]
+        public void TestJoinNullReference()
+        {
+            var (source, join) = Prepare();
+
+            var actual = XLeftJoin.Get(source, join);
+
+            var first = actual.ToList();
+
+            var nullEl2 = first.GetEnumerator().Current;
+            Assert.Null(nullEl2);
+
+            var nullEl = actual.GetEnumerator().Current;
+            Assert.Null(nullEl);
+        }
+
+        [Fact]
         public void TestJoinOneElementYield()
         {
             var (source, join) = Prepare();
