@@ -1,6 +1,5 @@
-using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Bogus;
 using Common;
 using Xunit;
@@ -11,6 +10,33 @@ namespace Queue.Common.Tests
     {
         [Fact]
         public void TestJoinOneElement()
+        {
+            var (source, join) = Prepare();
+
+            //we generated source with ids order as 0,1,2. For the check we take element with ID = 2, its index is 2
+            var actual = XLeftJoin.Get(source, join).ToList()[2];
+
+            //we generated join with ids order as 2,4. For the check we take element with ID = 2, its index is 0
+            var expected = join.ToList()[0];
+
+            Assert.Equal(expected.Details, actual.Details);
+        }
+
+        [Fact]
+        public void TestJoinOneElementYield()
+        {
+            var (source, join) = Prepare();
+
+            //we generated source with ids order as 0,1,2. For the check we take element with ID = 2, its index is 2
+            var actual = XLeftJoin.GetYield(source, join).ToList()[2];
+
+            //we generated join with ids order as 2,4. For the check we take element with ID = 2, its index is 0
+            var expected = join.ToList()[0];
+
+            Assert.Equal(expected.Details, actual.Details);
+        }
+
+        private (IEnumerable<Item1> source, IEnumerable<Item2> join) Prepare()
         {
             var ids = 0;
             var sourceFaker = new Faker<Item1>()
@@ -27,13 +53,7 @@ namespace Queue.Common.Tests
 
             var join = joinFaker.Generate(2);
 
-            //we generated source with ids order as 0,1,2. For the check we take element with ID = 2, its index is 2
-            var actual = XLeftJoin.Get(source, join).ToList()[2];
-
-            //we generated join with ids order as 2,4. For the check we take element with ID = 2, its index is 0
-            var expected = join.ToList()[0];
-
-            Assert.Equal(expected.Details, actual.Details);
+            return (source, join);
         }
     }
 }

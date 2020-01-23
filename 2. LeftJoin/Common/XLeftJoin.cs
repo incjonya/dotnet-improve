@@ -10,11 +10,20 @@ namespace Common
         {
             return new XEnumerable(source, join);
         }
+
+        public static IEnumerable<Item1> GetYield(IEnumerable<Item1> source, IEnumerable<Item2> join)
+        {
+            foreach(var x in source)
+            {
+                var joined = new Item1 { ID = x.ID, Value = x.Value, Details = join.FirstOrDefault(x => x.ID == x.ID)?.Details };
+                yield return joined;
+            }
+        }
     }
 
     public class XEnumerable : IEnumerable<Item1>
     {
-        private IEnumerator<Item1> _enumerator;
+        private readonly IEnumerator<Item1> _enumerator;
 
         public XEnumerable(IEnumerable<Item1> source, IEnumerable<Item2> join)
         {
