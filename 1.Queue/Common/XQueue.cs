@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Linq;
 
 namespace Common
 {
     public class XQueue<T>
     {
-        class XNode 
+        class XNode
         {
-            public XNode(T value) 
+            public XNode(T value)
             {
                 Value = value;
             }
@@ -17,11 +18,13 @@ namespace Common
             public T Value { get; private set; }
         }
 
+        public event Action<XQueue<T>> ObjectEnqueued;
+        public event Action<XQueue<T>> ObjectDequeued;
 
         XNode _first, _last;
         private readonly object _l = new object();
 
-        public XQueue() 
+        public XQueue()
         {
             _first = _last = null;
             Count = 0;
@@ -45,6 +48,8 @@ namespace Common
 
                 _last = node;
                 Count++;
+
+                OnObjectEnqueued();
             }
         }
 
@@ -69,10 +74,35 @@ namespace Common
 
                 Count--;
 
+                OnObjectDequeued();
+
                 return item;
             }
         }
 
         public int Count { get; private set; }
+        public string WatchersInfo
+        {
+            get
+            {
+                var handlerEnq = ObjectEnqueued;
+                var handlerDeq = ObjectDequeued;
+
+                return (handlerEnq == null ? "No Enq watcher" : $"Enq watcher(s) exists (target(s): {string.Join(",", handlerEnq.GetInvocationList().Select(x => x.Target))})") + "/"
+                     + (handlerDeq == null ? "No Deq watcher" : $"Deq watcher(s) exists (target(s): {string.Join(",", handlerDeq.GetInvocationList().Select(x => x.Target))})");
+            }
+        }
+
+
+
+        private void OnObjectEnqueued()
+        {
+            ObjectEnqueued?.Invoke(this);
+        }
+
+        private void OnObjectDequeued()
+        {
+            ObjectDequeued?.Invoke(this);
+        }
     }
 }

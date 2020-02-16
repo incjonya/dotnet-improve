@@ -8,11 +8,31 @@ namespace ConsoleDebug
         static void Main(string[] args)
         {
             var q = new XQueue<int>();
+            using (var conW = new ConsoleQueueWatcher<int>(q))
+            {
+                using (var logW = new LogQueueWatcher<int>(q))
+                {
+                    Console.WriteLine($"Start queue process, watchers: {q.WatchersInfo}");
+
+                    for (int i = 0; i < 10; i++)
+                    {
+                        q.Enqueue(i);
+                    }
+
+                    for (int i = 0; i < 10; i++)
+                    {
+                        var _ = q.Dequeue();
+                    }
+                }
+            }
+
+            Console.WriteLine($"Queue process disposed, watchers: {q.WatchersInfo}");
+
             q.Enqueue(10);
-            
-            Console.WriteLine($"Value added to queue. Queue size = {q.Count}");
-            var i = q.Dequeue();
-            Console.WriteLine($"Value = {i} removed from queue, Queue size = {q.Count}");
+            var res = q.Dequeue();
+
+            Console.WriteLine($"vaue {res} was removed without watching");
+
             Console.ReadKey();
         }
     }

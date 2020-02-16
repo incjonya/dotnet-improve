@@ -62,7 +62,7 @@ namespace Queue.Common.Tests
         }
 
         [Fact]
-        public async void TestHighLoad()
+        public async Task TestHighLoad()
         {
             var q = new XQueue<int>();
 

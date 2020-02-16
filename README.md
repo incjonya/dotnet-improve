@@ -49,7 +49,7 @@ https://github.com/microsoft/referencesource
 
 ## 2. LeftJoin
 Задание - есть 2 коллекции
- Item1: ID, Value, Details (ID, Value заполненго, поле Details не заполнено)
+ Item1: ID, Value, Details (ID, Value заполнено, поле Details не заполнено)
  Item2: ID, Details (ID , Details заполнено)
  Нужно реализовать оператор LeftJoin(IEnumerable<Item1>, IEnumerable<Item2>) который бы заполнил данные в коллекции 1 из коллекции 2
  Оператор должен возвращать IEnumerable<Item1> 
