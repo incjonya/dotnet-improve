@@ -13,7 +13,7 @@ namespace Common
 
         public class KeyEntry
         {
-            public int CurrentIndex { get; set; }
+            public int CurrentIndex { get; set; } = -1;
             public TKey Key { get; set; }
             public KeyEntry Next { get; set; }
         }
@@ -40,12 +40,18 @@ namespace Common
 
         public TValue Get(TKey key)
         {
-            int index = FindKeyIndex(key);
+            var keyEntry = FindKeyIndex(key);
 
-            if (index < 0)
+            if (keyEntry == null)
                 throw new KeyNotExists();
 
-            return _values[index];
+            if (keyEntry.Key.Equals(key))
+                return _values[keyEntry.CurrentIndex];
+
+            if (keyEntry.Next == null)
+                throw new KeyNotExists();
+
+            return _values[keyEntry.Next.CurrentIndex];
         }
 
         public void Add(TKey key, TValue value)
@@ -53,17 +59,29 @@ namespace Common
             if (_inEnumeration)
                 throw new InvalidOperationException("Collection was modified after the enumerator was instantiated");
 
-            int index = FindKeyIndex(key);
-            if (index >= 0)
+            var keyEntry = FindKeyIndex(key);
+            if (keyEntry != null && (keyEntry.Next != null || keyEntry.Key.Equals(key)))
                 throw new SameKeyException();
 
             if (_keys.Length == Count)
+            {
                 EnsureCapacity();
+                keyEntry = null; //нужно сбросить
+            }
+                
 
             _keys[Count] = key;
             _values[Count] = value;
 
-            AddInternal(key, Count);
+            if (keyEntry != null)
+            {
+                keyEntry.Next = new KeyEntry { CurrentIndex = Count, Key = key, Next = null };
+            }
+            else
+            {
+                // размер поменялся, добавляем через новый поиск
+                AddInternal(key, Count);
+            }
 
             Count++;
         }
@@ -98,20 +116,21 @@ namespace Common
             }
         }
 
-        private int FindKeyIndex(TKey key)
+        private KeyEntry FindKeyIndex(TKey key)
         {
             if (Count == 0)
-                return -1;
+                return null;
 
-            var keyEntry = _buckets[HashInternal(key)];
+            var bucket = _buckets[HashInternal(key)];
 
-            if (keyEntry.Root == null)
-                return -1;
+            if (bucket.Root == null)
+                return null;
 
-            var root = keyEntry.Root;
-            while(root != null && !root.Key.Equals(key)) root = root.Next;
+            var root = bucket.Root;
+            var previous = bucket.Root;
+            while (root != null && !root.Key.Equals(key)) { previous = root; root = root.Next; }            
 
-            return root == null ? -1 : root.CurrentIndex;
+            return previous; // или ключ в previous.Next или previous.Next = null и нужно прицепить к нему
         }
 
         private void EnsureCapacity()
