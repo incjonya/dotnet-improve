@@ -22,7 +22,7 @@ namespace Common
 
         private TKey[] _keys;
         private TValue[] _values;
-        
+
         private Bucket[] _buckets;
 
         private bool _inEnumeration;
@@ -42,13 +42,7 @@ namespace Common
         {
             var keyEntry = FindKeyIndex(key);
 
-            if (keyEntry == null)
-                throw new KeyNotExists();
-
-            if (keyEntry.Key.Equals(key))
-                return _values[keyEntry.CurrentIndex];
-
-            if (keyEntry.Next == null)
+            if (keyEntry == null || keyEntry.Next == null)
                 throw new KeyNotExists();
 
             return _values[keyEntry.Next.CurrentIndex];
@@ -60,7 +54,7 @@ namespace Common
                 throw new InvalidOperationException("Collection was modified after the enumerator was instantiated");
 
             var keyEntry = FindKeyIndex(key);
-            if (keyEntry != null && (keyEntry.Next != null || keyEntry.Key.Equals(key)))
+            if (keyEntry != null && keyEntry.Next != null)
                 throw new SameKeyException();
 
             if (_keys.Length == Count)
@@ -68,7 +62,7 @@ namespace Common
                 EnsureCapacity();
                 keyEntry = null; //нужно сбросить
             }
-                
+
 
             _keys[Count] = key;
             _values[Count] = value;
@@ -127,8 +121,8 @@ namespace Common
                 return null;
 
             var root = bucket.Root;
-            var previous = bucket.Root;
-            while (root != null && !root.Key.Equals(key)) { previous = root; root = root.Next; }            
+            var previous = new KeyEntry { Next = bucket.Root }; // new object for 'next' referencing
+            while (root != null && !root.Key.Equals(key)) { previous = root; root = root.Next; }
 
             return previous; // или ключ в previous.Next или previous.Next = null и нужно прицепить к нему
         }
@@ -142,7 +136,7 @@ namespace Common
             Array.Copy(_values, 0, tmpValues, 0, _keys.Length);
 
             _buckets = new Bucket[_keys.Length * 2];
-            for (int i=0; i<_keys.Length; i++)
+            for (int i = 0; i < _keys.Length; i++)
             {
                 AddInternal(_keys[i], i);
             }
