@@ -2,18 +2,37 @@
 
 namespace Common.Tests
 {
+    public enum HashType
+    {
+        Int, String, StrLen
+    }
+
+
     public struct TestKey : IComparable
     {
-        private int _key;
+        private readonly int _key;
 
         public int InternalKey => _key;
 
-        public TestKey(int key)
+        private HashType _hashType;
+
+        public TestKey(int key) : this (key, HashType.Int)
         {
-            _key = key;
         }
 
-        public override int GetHashCode() => _key;
+        public TestKey(int key, HashType hashType)
+        {
+            _key = key;
+            _hashType = hashType;
+        }
+
+        public override int GetHashCode() => _hashType switch
+        {
+            HashType.Int => _key,
+            HashType.String => _key.ToString().GetHashCode(),
+            HashType.StrLen => _key.ToString().Length,
+            _ => throw new ArgumentException("Not correct hash type")
+        };
 
         public override bool Equals(object obj)
         {
