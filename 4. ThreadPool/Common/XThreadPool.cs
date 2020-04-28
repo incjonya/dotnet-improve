@@ -10,7 +10,7 @@ namespace Common
 
         private readonly Thread _worker;
 
-        private readonly ConcurrentQueue<WorkItem> _concurrentQueue = new ConcurrentQueue<WorkItem>();
+        private readonly BlockingCollection<WorkItem> _concurrentQueue = new BlockingCollection<WorkItem>();
 
         private readonly CancellationToken _ct;
         private readonly CancellationTokenSource _cts;
@@ -32,19 +32,16 @@ namespace Common
 
         private void StarWorkLoop()
         {
-            while (!_ct.IsCancellationRequested)
+            foreach (var workItem in _concurrentQueue.GetConsumingEnumerable(_ct))
             {
-                if (_concurrentQueue.TryDequeue(out WorkItem workItem))
+                try
                 {
-                    try
-                    {
-                        workItem.Work();
-                        OnWorkCompleted(new WorkResult { WorkId = workItem.Id, Success = true });
-                    }
-                    catch(Exception ex)
-                    {
-                        OnWorkCompleted(new WorkResult { WorkId = workItem.Id, Success = false, Error = ex });
-                    }                    
+                    workItem.Work();
+                    OnWorkCompleted(new WorkResult { WorkId = workItem.Id, Success = true });
+                }
+                catch (Exception ex)
+                {
+                    OnWorkCompleted(new WorkResult { WorkId = workItem.Id, Success = false, Error = ex });
                 }
             }
         }
@@ -56,6 +53,7 @@ namespace Common
 
         public void WaitForShutdown()
         {
+            _concurrentQueue.CompleteAdding();
             _cts.Cancel();
             _worker.Join();
         }
@@ -63,7 +61,7 @@ namespace Common
         public string QueueWork(Action workItem)
         {
             var work = new WorkItem { Id = Guid.NewGuid().ToString(), Work = workItem } ;
-            _concurrentQueue.Enqueue(work);
+            _concurrentQueue.Add(work);
             return work.Id;
         }
     }
